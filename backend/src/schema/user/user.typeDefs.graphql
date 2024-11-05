@@ -1,0 +1,8 @@
+type User {
+    id: ID
+}
+
+extend type Query {
+    user(userId: ID!): User
+    users: [User]
+}

@@ -1,0 +1,9 @@
+type Session {
+    id: ID
+    user: User
+}
+
+extend type Query {
+    session(sessionId: ID!): Session
+    userSessions(userId: ID!): [Session]
+}

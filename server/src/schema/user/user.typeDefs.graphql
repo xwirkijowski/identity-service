@@ -1,40 +1,43 @@
-interface User {
-    id: ID!
-    userType: USER_TYPE!
+union User = NormalUser | APIUser
 
+type NormalUser {
+    "Unique Id of the user"
+    id: ID!
+    "User's email address"
+    email: String!
+
+    "Who created this user"
     createdBy: User!
+    "When was this user created"
     createdAt: Timestamp
+    "Who updated this user"
     updatedBy: User
+    "When was this user updated"
     updatedAt: Timestamp
+    "Current version (how many user has been updated)"
     version: Int
 }
 
-type NormalUser implements User {
+type APIUser {
+    "Unique Id of the user"
     id: ID!
-    userType: USER_TYPE!
-    email: String!
 
+    "Who created this user"
     createdBy: User!
+    "When was this user created"
     createdAt: Timestamp
+    "Who updated this user"
     updatedBy: User
+    "When was this user updated"
     updatedAt: Timestamp
-    version: Int
-}
-
-type ServiceUser implements User {
-    id: ID!
-    userType: USER_TYPE!
-    email: String!
-
-    createdBy: User!
-    createdAt: Timestamp
-    updatedBy: User
-    updatedAt: Timestamp
+    "Current version (how many user has been updated)"
     version: Int
 }
 
 extend type Query {
+    "Get user by Id"
     user(userId: ID!): User
+    "Get multiple users"
     users: [User]
 }
 

@@ -1,8 +1,64 @@
-type User {
-    id: ID
+interface User {
+    id: ID!
+    userType: USER_TYPE!
+
+    createdBy: User!
+    createdAt: Timestamp
+    updatedBy: User
+    updatedAt: Timestamp
+    version: Int
+}
+
+type NormalUser implements User {
+    id: ID!
+    userType: USER_TYPE!
+    email: String!
+
+    createdBy: User!
+    createdAt: Timestamp
+    updatedBy: User
+    updatedAt: Timestamp
+    version: Int
+}
+
+type ServiceUser implements User {
+    id: ID!
+    userType: USER_TYPE!
+    email: String!
+
+    createdBy: User!
+    createdAt: Timestamp
+    updatedBy: User
+    updatedAt: Timestamp
+    version: Int
 }
 
 extend type Query {
     user(userId: ID!): User
     users: [User]
+}
+
+enum USER_TYPE {
+    NORMAL
+    API
+}
+
+# Inputs
+
+input RegisterInput {
+    email: String!
+    password: String!
+}
+
+# Payloads
+
+type RegisterPayload {
+    result: Boolean!
+    user: User
+}
+
+# Mutations
+
+extend type Mutation {
+    register(input: RegisterInput): RegisterPayload!
 }

@@ -43,6 +43,7 @@ const setupMongo = async () => {
 		console.log(e);
 	})
 
+	// Attempt to connect
 	try {
 		$S.setDB('connecting');
 		$L.log('Attempting to establish database connection...', undefined, 'Mongoose')
@@ -51,6 +52,10 @@ const setupMongo = async () => {
 			heartbeatFrequencyMS: 10000,
 		})
 	} catch (err) {
+		// Handle initial errors
+
+		$S.setDB('error');
+
 		if (err instanceof mongoose.Error.MongooseServerSelectionError) {
 			// Error while looking for the server. Possibly server is unreachable or disabled.
 			new Err(`Cannot connect to the database. Error type: ${err.reason.type}.`, undefined, 'Mongoose')
@@ -70,10 +75,13 @@ const setupRedis = async () => {
 
 				// Generate a random jitter between 0 – 200 ms:
 				const jitter = Math.floor(Math.random() * 200);
-				// Delay is an exponential back off, (times^2) * 50 ms, with a maximum value of 2000 ms:
-				const delay = Math.min(Math.pow(2, retries) * 50, 10000);
+				// Delay is an exponential back off, (times^2) * 50 ms, with a maximum value of 30 s:
+				const delay = Math.min(Math.pow(2, retries) * 50, 30000);
+
+				if (retries % 5 === 0) new Err('Cannot connect to the database. Check if the redis database is running!', undefined, 'Redis', false)
 
 				new Warn(`Unexpected error, attempting to connect again [${retries}, ${delay+jitter}ms]...`, undefined, 'Redis');
+
 
 				return delay + jitter;
 			}
@@ -98,11 +106,14 @@ const setupRedis = async () => {
 		}
 	})
 
+	// Attempt to connect
 	try {
 		$S.setRedis('connecting');
 		$L.log('Attempting to establish database connection...', undefined, 'Redis')
 		await redisClient.connect();
 	} catch (err) {
+		// Handle initial errors
+
 		$S.setRedis('error');
 		new Err(`Cannot connect to the database. Code ${err.code}.`, undefined, 'Redis')
 	}

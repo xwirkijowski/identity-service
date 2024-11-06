@@ -49,7 +49,7 @@ if (!process.env?.REDIS_STRING) {
 }
 
 config.redis.socket = {
-	connectTimeout: 0, // 10s
+	connectTimeout: 0, // 10 s
 }
 
 config.redis.connection = () => {

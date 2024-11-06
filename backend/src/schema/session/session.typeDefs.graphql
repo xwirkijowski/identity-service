@@ -1,9 +1,48 @@
 type Session {
-    id: ID
+    "Session Id (ObjectId)"
+    id: ID!
     user: User
 }
 
 extend type Query {
+    "Get session by Id (ObjectId)"
     session(sessionId: ID!): Session
+    "Get sessions by userId (ObjectId)"
     userSessions(userId: ID!): [Session]
+}
+
+# Inputs
+
+input LogInInput {
+    "The users e-mail address"
+    email: String!
+
+    "The users password"
+    password: String!
+}
+
+input LogOutInput {
+    "Session to close (log out) (ObjectId)"
+    sessionId: ID!
+}
+
+# Payloads
+
+type LogInPayload {
+    result: Boolean!
+    user: User
+    session: Session
+}
+
+type LogOutPayload {
+    result: Boolean!
+    user: User
+    session: Session
+}
+
+# Mutations
+
+extend type Mutation {
+    logIn(input: LogInInput): LogInPayload
+    logOut(input: LogOutInput): LogOutPayload
 }

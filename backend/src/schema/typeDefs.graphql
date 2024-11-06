@@ -1,3 +1,9 @@
 type Query {
     healthCheck: String!
 }
+
+type Mutation {
+    _: String
+}
+
+scalar Timestamp

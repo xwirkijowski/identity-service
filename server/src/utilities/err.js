@@ -1,7 +1,7 @@
 import { $L } from './log.js';
 
 export default class Err {
-	constructor(msg, ext, mod, critical = false) {
+	constructor(msg, ext, mod, critical = true) {
 		// Log reported error
 		$L.error(msg, ext, mod);
 

@@ -28,7 +28,7 @@ const $S = new SystemStatus();
 const setupMongo = async () => {
 	mongoose.set('debug', true);
 
-	mongoose.connection.on('connected', cb => {
+	mongoose.connection.on('connected', () => {
 		$S.setDB('connected');
 		$L.success('Database connection established!', undefined, 'Mongoose')
 	})

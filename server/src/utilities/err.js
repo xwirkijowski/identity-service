@@ -1,11 +1,10 @@
 import { $L } from './log.js';
 
 export default class Err {
-	constructor(msg, ext, mod) {
+	constructor(msg, ext, mod, critical = false) {
 		// Log reported error
 		$L.error(msg, ext, mod);
 
-		// Throw exception
-		throw Error();
+		if (critical === true) throw Error(); // Throw exception if error is critical
 	}
 }

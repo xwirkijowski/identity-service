@@ -1,11 +1,15 @@
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
-import { setupMongo } from './src/database.js';
+import { setupMongo, setupRedis, $S } from './src/database.js';
 
 // Import final schema
 import schema from './src/schema.js';
 
 import {$L} from "./src/utilities/log.js";
+
+// Setup Redis client
+const {redisClient} = setupRedis();
+export {redisClient};
 
 // Setup Mongoose connection to the database
 await setupMongo();
@@ -26,7 +30,8 @@ const { url } = await startStandaloneServer(server, {
 			dataSources: {
 				user: userModel,
 				// session:
-			}
+			},
+			systemStatus: $S
 		}
 	}
 })

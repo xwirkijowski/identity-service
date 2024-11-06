@@ -1,5 +1,21 @@
 type Query {
-    healthCheck: String!
+    healthCheck: HealthCheck
+}
+
+type HealthCheck {
+    timestamp: Timestamp!
+    internal: InternalStatus!
+    domains: DomainStatus!
+}
+
+type InternalStatus {
+    database: String!
+    redis: String!
+}
+
+type DomainStatus {
+    session: Boolean!
+    user: Boolean!
 }
 
 type Mutation {

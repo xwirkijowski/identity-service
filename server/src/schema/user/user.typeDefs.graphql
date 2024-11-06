@@ -57,7 +57,7 @@ input RegisterInput {
 
 type RegisterPayload {
     result: Boolean!
-    user: User
+    user: NormalUser
 }
 
 # Mutations

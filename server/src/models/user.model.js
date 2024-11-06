@@ -5,20 +5,15 @@ export default mongoose.model(
 	new mongoose.Schema({
 		userType: {
 			type: String,
+			enum: ['NORMAL', 'API'],
 			required: true
 		},
 		email: {
 			type: String,
-			required: () => {
-				return (this.userType === 'NORMAL');
-			},
 			unique: true
 		},
 		password: {
 			type: String,
-			required: () => {
-				return (this.userType === 'NORMAL');
-			}
 		},
 		createdAt: {
 			type: String,
@@ -42,3 +37,4 @@ export default mongoose.model(
 		versionKey: false
 	})
 )
+

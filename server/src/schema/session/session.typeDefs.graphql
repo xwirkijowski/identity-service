@@ -26,6 +26,13 @@ input LogOutInput {
     sessionId: ID!
 }
 
+input CreateTokenInput {
+    "User Id of the desired API user"
+    user: ID!
+    "Secret (password) to the API user"
+    secret: String!
+}
+
 # Payloads
 
 type LogInPayload {
@@ -40,9 +47,19 @@ type LogOutPayload {
     session: Session
 }
 
+type CreateTokenPayload {
+    result: Boolean!
+    user: APIUser
+    token: String
+}
+
 # Mutations
 
 extend type Mutation {
+    "Log in normal user"
     logIn(input: LogInInput): LogInPayload
+    "Log out normal user"
     logOut(input: LogOutInput): LogOutPayload
+    "Create JWT for API user use"
+    createToken(input: CreateTokenInput): CreateTokenPayload
 }

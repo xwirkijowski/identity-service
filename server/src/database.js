@@ -66,36 +66,36 @@ const setupMongo = async () => {
 	}
 }
 
-const setupRedis = async () => {
-		const redisClient = createClient({
-		url: config.redis.connection(),
-		socket: {...config.redis.socket,
-			reconnectStrategy: (retries, err) => {
-				$S.setRedis('connecting');
+export const redisClient = createClient({
+	url: config.redis.connection(),
+	socket: {...config.redis.socket,
+		reconnectStrategy: (retries, err) => {
+			$S.setRedis('connecting');
 
-				// Generate a random jitter between 0 – 200 ms:
-				const jitter = Math.floor(Math.random() * 200);
-				// Delay is an exponential back off, (times^2) * 50 ms, with a maximum value of 30 s:
-				const delay = Math.min(Math.pow(2, retries) * 50, 30000);
+			// Generate a random jitter between 0 – 200 ms:
+			const jitter = Math.floor(Math.random() * 200);
+			// Delay is an exponential back off, (times^2) * 50 ms, with a maximum value of 30 s:
+			const delay = Math.min(Math.pow(2, retries) * 50, 30000);
 
-				if (retries % 5 === 0) new Err('Cannot connect to the database. Check if the redis database is running!', undefined, 'Redis', false)
+			if (retries % 5 === 0) new Err('Cannot connect to the database. Check if the redis database is running!', undefined, 'Redis', false)
 
-				new Warn(`Unexpected error, attempting to connect again [${retries}, ${delay+jitter}ms]...`, undefined, 'Redis');
+			new Warn(`Unexpected error, attempting to connect again [${retries}, ${delay+jitter}ms]...`, undefined, 'Redis');
 
 
-				return delay + jitter;
-			}
+			return delay + jitter;
 		}
-	});
+	}
+});
 
+const setupRedis = async (client) => {
 	// Redis client has connected and is ready for operations
-	redisClient.on('ready', () => {
+	client.on('ready', () => {
 		$S.setRedis('connected');
 		$L.success('Database connection established!', undefined, 'Redis')
 	})
 
 	// Redis client has encountered an error
-	redisClient.on('error', err => {
+	client.on('error', err => {
 		if (err.constructor.name === 'SocketClosedUnexpectedlyError') {
 			// Handled by socket.reconnectStrategy
 		} else if (err.constructor.name === 'Error' && err.code === 'ECONNREFUSED' && $S.redis === 'connecting') {
@@ -110,7 +110,7 @@ const setupRedis = async () => {
 	try {
 		$S.setRedis('connecting');
 		$L.log('Attempting to establish database connection...', undefined, 'Redis')
-		await redisClient.connect();
+		client.connect();
 	} catch (err) {
 		// Handle initial errors
 
@@ -118,7 +118,7 @@ const setupRedis = async () => {
 		new Err(`Cannot connect to the database. Code ${err.code}.`, undefined, 'Redis')
 	}
 
-	return redisClient;
+	return client;
 }
 
 export {setupMongo, setupRedis, $S}

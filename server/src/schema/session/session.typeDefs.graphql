@@ -1,7 +1,9 @@
 type Session {
     "Session Id (ObjectId)"
-    id: ID!
+    id: String!
     user: User
+    userAgent: String
+    loggedInAt: Timestamp
 }
 
 extend type Query {
@@ -9,6 +11,9 @@ extend type Query {
     session(sessionId: ID!): Session
     "Get sessions by userId (ObjectId)"
     userSessions(userId: ID!): [Session]
+
+    currentUser: User
+    currentSession: Session
 }
 
 # Inputs
@@ -36,19 +41,16 @@ input CreateTokenInput {
 # Payloads
 
 type LogInPayload {
-    result: Boolean!
-    user: User
-    session: Session
+    user: NormalUser
+    sessionId: String
 }
 
 type LogOutPayload {
-    result: Boolean!
-    user: User
-    session: Session
+    user: NormalUser
+    sessionId: String
 }
 
 type CreateTokenPayload {
-    result: Boolean!
     user: APIUser
     token: String
 }

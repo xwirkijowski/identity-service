@@ -48,12 +48,37 @@ enum USER_TYPE {
 
 # Inputs
 
+input CreateUserInput {
+    email: String!
+    password: String
+}
+
+input UpdateUserInput {
+    userId: ID!
+    email: String
+    password: String
+}
+
 input RegisterInput {
     email: String!
     password: String!
 }
 
 # Payloads
+
+type CreateUserPayload {
+    result: Boolean!
+    user: User
+}
+
+type UpdateUserPayload {
+    result: Boolean!
+    user: User
+}
+
+type DeleteUserPayload {
+    result: Boolean!
+}
 
 type RegisterPayload {
     result: Boolean!
@@ -63,5 +88,9 @@ type RegisterPayload {
 # Mutations
 
 extend type Mutation {
+    createUser(input: CreateUserInput): CreateUserPayload!
+    updateUser(input: UpdateUserInput): UpdateUserPayload!
+    deleteUser(userId: ID!): DeleteUserPayload!
+
     register(input: RegisterInput): RegisterPayload!
 }

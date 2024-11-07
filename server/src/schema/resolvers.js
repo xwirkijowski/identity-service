@@ -9,10 +9,14 @@ export default {
 	},
 	DomainStatus: {
 		user: (_, __, {systemStatus}) => {
-			return (systemStatus.db === 'connected');
+			if (systemStatus.db === 'connected') return 'available';
+			return 'unavailable';
 		},
 		session: (_, __, {systemStatus}) => {
-			return (systemStatus.redis === 'connected');
+			if (systemStatus.redis === 'connected') return 'available';
+			if (systemStatus.redis !== 'connected' && systemStatus.db === 'connected') return 'limited';
+
+			return 'unavailable';
 		}
 	},
 	HealthCheck: {

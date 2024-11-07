@@ -6,6 +6,12 @@ import Err from "./utilities/err.js";
 import config from "../config.js";
 import Warn from "./utilities/warn.js";
 
+
+/**
+ * System status class
+ *
+ * @description		Used to create a single instance meant as a single source of truth for health checks
+ */
 class SystemStatus {
 	constructor () {
 		this.db = false;
@@ -23,7 +29,8 @@ class SystemStatus {
 	}
 }
 
-const $S = new SystemStatus();
+// Create a System Status instance and export it
+export const $S = new SystemStatus();
 
 const setupMongo = async () => {
 	mongoose.set('debug', true);
@@ -81,7 +88,6 @@ export const redisClient = createClient({
 
 			new Warn(`Unexpected error, attempting to connect again [${retries}, ${delay+jitter}ms]...`, undefined, 'Redis');
 
-
 			return delay + jitter;
 		}
 	}
@@ -121,4 +127,4 @@ const setupRedis = async (client) => {
 	return client;
 }
 
-export {setupMongo, setupRedis, $S}
+export {setupMongo, setupRedis}

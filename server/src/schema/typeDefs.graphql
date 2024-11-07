@@ -14,8 +14,8 @@ type InternalStatus {
 }
 
 type DomainStatus {
-    session: Boolean!
-    user: Boolean!
+    session: String!
+    user: String!
 }
 
 type Mutation {

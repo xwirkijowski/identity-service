@@ -9,7 +9,7 @@ import schema from './src/schema.js';
 import {$L} from "./src/utilities/log.js";
 
 // Setup Redis client
-await setupRedis(redisClient);
+setupRedis(redisClient);
 
 export {redisClient};
 
@@ -35,11 +35,16 @@ const { url } = await startStandaloneServer(server, {
 		if (token) {
 			token = token.replace('Bearer ', '');
 
-			const sessionFetch = await sessionRepository.fetch(token);
-
-			if (sessionFetch.userId !== null) {
-				session = sessionFetch
+			// Sessions for users only supported when Redis is online
+			// Can make server unresponsive if Redis is offline
+			if ($S.redis === 'connected') {
+				const sessionFetch = await sessionRepository.fetch(token);
+				if (sessionFetch.userId !== null) {
+					session = sessionFetch
+				}
 			}
+
+			// @todo Add support for API users to try auth via DB
 		}
 
 		return {

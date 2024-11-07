@@ -1,4 +1,12 @@
 export default {
+	Result: {
+		success: (obj) => {
+			return ((typeof obj === 'boolean' && obj === true) || obj?.success === true);
+		},
+		errors: (obj) => {
+			return (typeof obj === 'boolean' && obj === true) ? [] : obj?.errors;
+		}
+	},
 	InternalStatus: {
 		database: (_, __, {systemStatus}) => {
 			return systemStatus.db;
@@ -15,7 +23,6 @@ export default {
 		session: (_, __, {systemStatus}) => {
 			if (systemStatus.redis === 'connected') return 'available';
 			if (systemStatus.redis !== 'connected' && systemStatus.db === 'connected') return 'limited';
-
 			return 'unavailable';
 		}
 	},

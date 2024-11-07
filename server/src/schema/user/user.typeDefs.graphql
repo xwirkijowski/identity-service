@@ -67,21 +67,21 @@ input RegisterInput {
 # Payloads
 
 type CreateUserPayload {
-    result: Boolean!
+    result: Result!
     user: User
 }
 
 type UpdateUserPayload {
-    result: Boolean!
+    result: Result!
     user: User
 }
 
 type DeleteUserPayload {
-    result: Boolean!
+    result: Result!
 }
 
 type RegisterPayload {
-    result: Boolean!
+    result: Result!
     user: NormalUser
 }
 

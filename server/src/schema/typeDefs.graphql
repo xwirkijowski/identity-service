@@ -18,8 +18,17 @@ type DomainStatus {
     user: String!
 }
 
-type Mutation {
-    _: String
+type Result {
+    success: Boolean!
+    errors: [Error]
 }
+
+type Error {
+    code: String
+    path: String
+    msg: String
+}
+
+type Mutation
 
 scalar Timestamp

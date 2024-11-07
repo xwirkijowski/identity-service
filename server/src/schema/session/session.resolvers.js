@@ -2,6 +2,8 @@ import { GraphQLError } from 'graphql';
 import { scrypt } from "node:crypto";
 import { EntityId } from 'redis-om'
 
+import {validate as valid} from "../../utilities/resolverHelpers.js";
+
 export default {
 	Session: {
 		id: (obj) => {
@@ -21,23 +23,13 @@ export default {
 		}
 	},
 	Mutation: {
-		logIn: async (_, {input}, {dataSources: {user, session}, systemStatus, req}, ) => {
+		logIn: async (_, {input}, {dataSources: {user, session}, systemStatus, req}) => {
+			if (systemStatus.redis !== 'connected') throw new GraphQLError('Session domain unavailable', {extensions: ['INTERNAL_SERVER_ERROR']});
+
 			// Validate required input fields
-
-			if (!input) {
-				throw new GraphQLError('Input is required',
-					{ extensions: { code: 'BAD_USER_INPUT' } });
-			}
-
-			if (!input.email) {
-				throw new GraphQLError('Email is required',
-					{ extensions: { code: 'BAD_USER_INPUT' } });
-			}
-
-			if (!input.password) {
-				throw new GraphQLError('Password is required',
-					{ extensions: { code: 'BAD_USER_INPUT' } });
-			}
+			valid.NN(input);
+			valid.NN(input.email);
+			valid.NN(input.password);
 
 			// Normalize user input
 			input.email = input.email.normalize('NFKD');
@@ -46,14 +38,22 @@ export default {
 			// Get user by email
 			const userNode = await user.findOne({email: input.email})
 
-			// If no user found or if user found but passwords do not match throw GQL error.
-			if (!userNode || input.password !== userNode?.password) {
-				throw new GraphQLError('Cannot log in')
+			// If no user found or if user found but passwords do not match return operation failed
+			if (!userNode || userNode.userType !== 'NORMAL' || input.password !== userNode?.password) {
+				return {
+					result: {
+						success: false,
+						errors: [
+							{
+								code: "INVALID_CREDENTIALS",
+							}
+						]
+					}
+				};
 			}
 
 			// Set up variables
 			const timestamp = new Date();
-
 			const req_userAgent = req.get('User-Agent').normalize('NFKD') || null;
 
 			// Create session
@@ -68,29 +68,29 @@ export default {
 
 			// Return user and sessionId
 			return {
+				result: true,
 				user: userNode,
 				sessionId: sessionNode[EntityId],
 			}
-
 		},
-		register: async (_, {input}, {dataSources: {user}, systemStatus}) => {
+		logOut: async (_, {input}, {dataSources: {session}, systemStatus, req}) => {
+			if (systemStatus.redis !== 'connected') throw new GraphQLError('Session domain unavailable', {extensions: ['INTERNAL_SERVER_ERROR']});
 
 			// Validate required input fields
+			valid.NN(input);
 
-			if (!input) {
-				throw new GraphQLError('Input is required',
-					{ extensions: { code: 'BAD_USER_INPUT' } });
+			return {
+				result: true,
 			}
+		},
+		register: async (_, {input}, {dataSources: {user}, systemStatus}) => {
+			if (systemStatus.redis !== 'connected') throw new GraphQLError('Session domain unavailable', {extensions: ['INTERNAL_SERVER_ERROR']});
 
-			if (!input.email) {
-				throw new GraphQLError('Email is required',
-					{ extensions: { code: 'BAD_USER_INPUT' } });
-			}
+			// Validate required input fields
+			valid.NN(input);
+			valid.NN(input.email);
+			valid.NN(input.password);
 
-			if (!input.password) {
-				throw new GraphQLError('Password is required',
-					{ extensions: { code: 'BAD_USER_INPUT' } });
-			}
 
 			// Normalize user input
 			input.email = input.email.normalize('NFKD');
@@ -128,6 +128,7 @@ export default {
 			})
 
 			return {
+				result: true,
 				user: userNode
 			}
 		}

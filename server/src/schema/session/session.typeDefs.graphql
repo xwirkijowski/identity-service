@@ -41,16 +41,19 @@ input CreateTokenInput {
 # Payloads
 
 type LogInPayload {
+    result: Result!
     user: NormalUser
     sessionId: String
 }
 
 type LogOutPayload {
+    result: Result!
     user: NormalUser
     sessionId: String
 }
 
 type CreateTokenPayload {
+    result: Result!
     user: APIUser
     token: String
 }

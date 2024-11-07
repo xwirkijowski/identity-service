@@ -33,7 +33,7 @@ input LogOutInput {
 
 input CreateTokenInput {
     "User Id of the desired API user"
-    user: ID!
+    userId: ID!
     "Secret (password) to the API user"
     secret: String!
 }

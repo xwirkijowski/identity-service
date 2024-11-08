@@ -1,5 +1,5 @@
-import Err from './src/utilities/err.js';
-import Warn from './src/utilities/warn.js';
+import InternalError from './src/utilities/internalError.js';
+import InternalWarning from './src/utilities/internalWarning.js';
 import {$L} from "./src/utilities/log.js";
 
 // Load configuration from environment variables
@@ -22,7 +22,7 @@ config.server = {
 	port: process.env?.SERVER_PORT ?? defaults.server.port,
 }
 
-!process.env?.SERVER_PORT && new Warn(`No SERVER_PORT specified, using default ${defaults.server.port}`);
+!process.env?.SERVER_PORT && new InternalWarning(`No SERVER_PORT specified, using default ${defaults.server.port}`);
 
 // Redis configuration block
 
@@ -35,11 +35,11 @@ if (!process.env?.REDIS_STRING) {
 		password: process.env?.REDIS_PASSWORD ?? null,
 	};
 
-	!config.redis.host && new Warn('No REDIS_HOST specified, sessions will not be available without a REDIS database');
-	!process.env?.REDIS_PORT && new Warn(`No REDIS_PORT specified, using default ${defaults.redis.port}`);
-	!config.redis.db && new Warn('No REDIS_DB specified')
-	!config.redis.user && new Warn('No REDIS_USER specified');
-	config.redis.user && !config.redis.password && new Warn('REDIS_USER specified but no REDIS_PASSWORD, access to database may be limited')
+	!config.redis.host && new InternalWarning('No REDIS_HOST specified, sessions will not be available without a REDIS database');
+	!process.env?.REDIS_PORT && new InternalWarning(`No REDIS_PORT specified, using default ${defaults.redis.port}`);
+	!config.redis.db && new InternalWarning('No REDIS_DB specified')
+	!config.redis.user && new InternalWarning('No REDIS_USER specified');
+	config.redis.user && !config.redis.password && new InternalWarning('REDIS_USER specified but no REDIS_PASSWORD, access to database may be limited')
 } else {
 	config.redis = {
 		string: process.env.REDIS_STRING
@@ -72,11 +72,11 @@ if (!process.env.MONGO_STRING) {
 		opts: process.env?.MONGO_OPTS ?? null
 	};
 
-	!config.mongo.host && new Err('No MONGO_HOST specified, no access to database!')
-	!config.mongo.port && new Err('No MONGO_PORT specified, no access to database!')
-	!config.mongo.db && new Err('No MONGO_DB specified, no database to access!')
-	!config.mongo.user && new Warn('No MONGO_USER specified, access to database may be limited')
-	config.mongo.user && !config.mongo.password && new Warn('MONGO_USER specified but no MONGO_PASSWORD, access to database may be limited')
+	!config.mongo.host && new InternalError('No MONGO_HOST specified, no access to database!')
+	!config.mongo.port && new InternalError('No MONGO_PORT specified, no access to database!')
+	!config.mongo.db && new InternalError('No MONGO_DB specified, no database to access!')
+	!config.mongo.user && new InternalWarning('No MONGO_USER specified, access to database may be limited')
+	config.mongo.user && !config.mongo.password && new InternalWarning('MONGO_USER specified but no MONGO_PASSWORD, access to database may be limited')
 } else {
 	config.mongo = {
 		string: process.env.MONGO_STRING

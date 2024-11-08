@@ -91,6 +91,6 @@ extend type Mutation {
     createUser(input: CreateUserInput): CreateUserPayload!
     updateUser(input: UpdateUserInput): UpdateUserPayload!
     deleteUser(userId: ID!): DeleteUserPayload!
-
+    
     register(input: RegisterInput): RegisterPayload!
 }

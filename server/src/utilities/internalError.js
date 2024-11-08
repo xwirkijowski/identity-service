@@ -1,6 +1,6 @@
 import { $L } from './log.js';
 
-export default class Err {
+export default class InternalError {
 	constructor(msg, ext, mod, critical = true) {
 		// Log reported error
 		$L.error(msg, ext, mod);

@@ -23,7 +23,7 @@ export default {
 	},
 	Mutation: {
 		logIn: async (_, {input}, {dataSources: {user, session}, systemStatus, req}) => {
-			check.Needs('redis');
+			check.needs('redis');
 
 			const result = new Result();
 

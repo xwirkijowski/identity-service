@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 import {createClient} from "redis";
 
 import { $L } from "./utilities/log.js";
-import Err from "./utilities/err.js";
+import InternalError from "./utilities/internalError.js";
 import config from "../config.js";
-import Warn from "./utilities/warn.js";
+import InternalWarning from "./utilities/internalWarning.js";
 
 
 /**
@@ -42,7 +42,7 @@ const setupMongo = async () => {
 
 	mongoose.connection.on('error', err => {
 		$S.setDB('error');
-		new Err(`Code ${err.errorResponse.code}, ${err.errorResponse.errmsg}`, undefined, 'Mongoose');
+		new InternalError(`Code ${err.errorResponse.code}, ${err.errorResponse.errmsg}`, undefined, 'Mongoose');
 	})
 
 	mongoose.connection.on('disconnect', e => {
@@ -65,10 +65,10 @@ const setupMongo = async () => {
 
 		if (err instanceof mongoose.Error.MongooseServerSelectionError) {
 			// Error while looking for the server. Possibly server is unreachable or disabled.
-			new Err(`Cannot connect to the database. Error type: ${err.reason.type}.`, undefined, 'Mongoose')
+			new InternalError(`Cannot connect to the database. Error type: ${err.reason.type}.`, undefined, 'Mongoose')
 		} else {
 			// Server is found but cannot connect.
-			new Err(`Connection error. Code ${err.errorResponse.code}, ${err.errorResponse.errmsg}`, undefined, 'Mongoose');
+			new InternalError(`Connection error. Code ${err.errorResponse.code}, ${err.errorResponse.errmsg}`, undefined, 'Mongoose');
 		}
 	}
 }
@@ -84,9 +84,9 @@ export const redisClient = createClient({
 			// Delay is an exponential back off, (times^2) * 50 ms, with a maximum value of 30 s:
 			const delay = Math.min(Math.pow(2, retries) * 50, 30000);
 
-			if (retries % 5 === 0) new Err('Cannot connect to the database. Check if the redis database is running!', undefined, 'Redis', false)
+			if (retries % 5 === 0) new InternalError('Cannot connect to the database. Check if the redis database is running!', undefined, 'Redis', false)
 
-			new Warn(`Unexpected error, attempting to connect again [${retries}, ${delay+jitter}ms]...`, undefined, 'Redis');
+			new InternalWarning(`Unexpected error, attempting to connect again [${retries}, ${delay+jitter}ms]...`, undefined, 'Redis');
 
 			return delay + jitter;
 		}
@@ -108,7 +108,7 @@ const setupRedis = async (client) => {
 			// Handled by socket.reconnectStrategy
 		} else {
 			$S.setRedis('error');
-			new Err(`Code ${err.code}${err?.msg?', '+err.msg:''}`, undefined, 'Redis', true);
+			new InternalError(`Code ${err.code}${err?.msg?', '+err.msg:''}`, undefined, 'Redis', true);
 		}
 	})
 
@@ -121,7 +121,7 @@ const setupRedis = async (client) => {
 		// Handle initial errors
 
 		$S.setRedis('error');
-		new Err(`Cannot connect to the database. Code ${err.code}.`, undefined, 'Redis')
+		new InternalError(`Cannot connect to the database. Code ${err.code}.`, undefined, 'Redis')
 	}
 
 	return client;

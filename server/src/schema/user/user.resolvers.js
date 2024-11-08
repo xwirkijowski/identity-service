@@ -46,7 +46,7 @@ export default {
 	},
 	Mutation: {
 		createUser: async (_, {input}, {session, dataSources: {user}, systemStatus}) => {
-			check.Needs('db')
+			check.needs('db')
 
 			const result = new Result();
 
@@ -92,13 +92,13 @@ export default {
 			}
 		},
 		updateUser: async (_, {input}, {session, dataSources: {user}, systemStatus}) => {
-			check.Needs('db')
+			check.needs('db')
 		},
 		deleteUser: async (_, {input}, {session, dataSources: {user}, systemStatus}) => {
-			check.Needs('db')
+			check.needs('db')
 		},
 		register: async (_, {input}, {session, dataSources: {user}, systemStatus}) => {
-			check.Needs('db')
+			check.needs('db')
 
 			const result = new Result();
 

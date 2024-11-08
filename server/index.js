@@ -36,7 +36,7 @@ const { url } = await startStandaloneServer(server, {
 			token = token.replace('Bearer ', '');
 
 			// Sessions for users only supported when Redis is online
-			// Can make server unresponsive if Redis is offline
+			// Await can make server unresponsive if Redis is offline
 			if ($S.redis === 'connected') {
 				const sessionFetch = await sessionRepository.fetch(token);
 				if (sessionFetch.userId !== undefined && sessionFetch.userId !== null) { // Check if fetch valid

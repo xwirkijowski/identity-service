@@ -1,8 +1,8 @@
 import { GraphQLError } from 'graphql';
 import { scrypt } from "node:crypto";
 import { EntityId } from 'redis-om'
-
-import {validate as valid} from "../../utilities/resolverHelpers.js";
+import { Result } from "../../utilities/result.js";
+import {setupMeta, check} from "../../utilities/resolverHelpers.js";
 
 export default {
 	Session: {
@@ -12,7 +12,6 @@ export default {
 		user: async ({userId}, __, {dataSources: {user}}) => {
 			return (userId) ? await user.findOne({_id: userId}) : null
 		}
-
 	},
 	Query: {
 		currentUser: async (_, __, {dataSources: {user}, session}) => {
@@ -24,12 +23,14 @@ export default {
 	},
 	Mutation: {
 		logIn: async (_, {input}, {dataSources: {user, session}, systemStatus, req}) => {
-			if (systemStatus.redis !== 'connected') throw new GraphQLError('Session domain unavailable', {extensions: ['INTERNAL_SERVER_ERROR']});
+			check.Needs('redis');
+
+			const result = new Result();
 
 			// Validate required input fields
-			valid.NN(input);
-			valid.NN(input.email);
-			valid.NN(input.password);
+			check.NN(input);
+			check.NN(input.email);
+			check.NN(input.password);
 
 			// Normalize user input
 			input.email = input.email.normalize('NFKD');
@@ -40,16 +41,8 @@ export default {
 
 			// If no user found or if user found but passwords do not match return operation failed
 			if (!userNode || userNode.userType !== 'NORMAL' || input.password !== userNode?.password) {
-				return {
-					result: {
-						success: false,
-						errors: [
-							{
-								code: "INVALID_CREDENTIALS",
-							}
-						]
-					}
-				};
+				result.addError('INVALID_CREDENTIALS');
+				return result.response();
 			}
 
 			// Set up variables
@@ -66,70 +59,30 @@ export default {
 			// Set session to expire in 1 hour (3600 s)
 			session.expire(sessionNode[EntityId], 3600)
 
-			// Return user and sessionId
+			if (sessionNode.userId !== undefined && sessionNode.userId !== null) {
+				return {
+					result: result.response(false),
+					user: userNode,
+					sessionId: sessionNode[EntityId],
+				}
+			}
+
+			// Default to failed
 			return {
-				result: true,
-				user: userNode,
-				sessionId: sessionNode[EntityId],
+				result: {
+					success: false
+				}
 			}
 		},
 		logOut: async (_, {input}, {dataSources: {session}, systemStatus, req}) => {
 			if (systemStatus.redis !== 'connected') throw new GraphQLError('Session domain unavailable', {extensions: ['INTERNAL_SERVER_ERROR']});
 
 			// Validate required input fields
-			valid.NN(input);
+			check.NN(input);
 
+			// Default to failed
 			return {
-				result: true,
-			}
-		},
-		register: async (_, {input}, {dataSources: {user}, systemStatus}) => {
-			if (systemStatus.redis !== 'connected') throw new GraphQLError('Session domain unavailable', {extensions: ['INTERNAL_SERVER_ERROR']});
-
-			// Validate required input fields
-			valid.NN(input);
-			valid.NN(input.email);
-			valid.NN(input.password);
-
-
-			// Normalize user input
-			input.email = input.email.normalize('NFKD');
-			input.password = input.password.normalize('NFKD');
-
-			// Validate password
-			if (input.password.length < 16) {
-				throw new GraphQLError('Password must be at least 16 characters',
-					{ extensions: { code: ['BAD_USER_INPUT', 'PASSWORD_TOO_SHORT'] } });
-			}
-
-			// @Todo: validate e-mail
-
-			if (await user.countDocuments({ email: input.email }) !== 0) {
-				throw new GraphQLError('E-mail already in use',
-					{ extensions: { code: ['EMAIL_TAKEN'] } });
-			}
-
-			// Hash password
-
-			// Add meta
-			input.userType = 'NORMAL';
-
-			input.createdAt = new Date();
-			input.createdBy = null;
-			input.version = 0;
-
-			const userNode = await user.create({
-				userType: 'NORMAL',
-				email: input.email,
-				password: input.password,
-				createdAt: new Date().toISOString(),
-				createdBy: "672aad0eb202f368ee0ef761",
-				version: 0
-			})
-
-			return {
-				result: true,
-				user: userNode
+				result: false
 			}
 		}
 	}

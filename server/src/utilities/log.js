@@ -23,7 +23,7 @@ const types = {
 
 const prefix = (type, timestamp, component) => {
 	if (component)
-		return `${types[type].start} ${timestamp} [${component.toUpperCase()}]`;
+		return `${types[type].start} ${timestamp} [${component}]`;
 	else return `${types[type].start} ${timestamp}`;
 };
 

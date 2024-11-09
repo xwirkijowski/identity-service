@@ -11,7 +11,7 @@ type Session {
     createdAt: Timestamp
     "Session last refresh timestamp"
     updatedAt: Timestamp
-    "Session refresh count"
+    "Session refresh count, also equivalent of how many requests were made with the session"
     version: Int
 }
 
@@ -19,9 +19,11 @@ extend type Query {
     "Get session by Id (ObjectId)"
     session(sessionId: ID!): Session
     "Get sessions by userId (ObjectId)"
-    userSessions(userId: ID!): [Session]
+    sessionsByUser(userId: ID!): [Session]
 
+    "Get user from current session"
     currentUser: User
+    "Get current session"
     currentSession: Session
 }
 

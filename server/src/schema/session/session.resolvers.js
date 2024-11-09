@@ -17,6 +17,22 @@ export default {
 		}
 	},
 	Query: {
+		session: async (_, {sessionId}, {models}) => {
+			check.needs('redis');
+			check.validate(sessionId, 'string');
+
+			const sessionNode = await models.session.fetch(sessionId);
+
+			return (sessionNode?.userId)?sessionNode:null;
+		},
+		sessionsByUser: async (_, {userId}, {models}) => {
+			check.needs('redis');
+			check.validate(userId, 'string');
+
+			const sessionNodes = await models.session.search().where('userId').eq(userId).return.all()
+
+			return sessionNodes||[];
+		},
 		currentUser: (_, __, {models: {user}, session}) => {
 			return (session) ? session.user : null
 		},

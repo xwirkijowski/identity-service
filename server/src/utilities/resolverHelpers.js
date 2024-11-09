@@ -11,7 +11,7 @@ export const check = {
 	 */
 	validate: (input, type) => {
 		if (input !== undefined && input !== null && typeof input === type) return true;
-		throw new GraphQLError('Input is required', { extensions: { code: 'BAD_USER_INPUT' } });
+		throw new GraphQLError('Input null or wrong type', { extensions: { code: 'BAD_USER_INPUT' } });
 	},
 	needs: (system) => {
 		if (system === 'db' && $S.db !== 'connected') {

@@ -1,5 +1,6 @@
 import {Repository, Schema} from 'redis-om';
 import {redisClient} from "../../index.js";
+import crypto from 'node:crypto';
 
 const sessionSchema = new Schema(
 	'session', {
@@ -12,6 +13,9 @@ const sessionSchema = new Schema(
 	},
 	{
 		dataStructure: 'JSON',
+		idStrategy: () => {
+			return crypto.randomBytes(64).toString('hex');
+		}
 	}
 );
 

@@ -1,10 +1,18 @@
 type Session {
     "Session Id (ObjectId)"
     id: String!
+    "Associated user"
     user: User
+    "User-agent used while creating the session"
     userAgent: String
+    "Remote host IP address used while creating the seesion"
     userAddress: String
+    "Session creation timestamp"
     createdAt: Timestamp
+    "Session last refresh timestamp"
+    updatedAt: Timestamp
+    "Session refresh count"
+    version: Int
 }
 
 extend type Query {

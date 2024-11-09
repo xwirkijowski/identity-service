@@ -43,6 +43,11 @@ export default async (req) => {
 			throw new GraphQLError('User does not exist');
 		}
 
+		// Update session
+		sessionNode.updatedAt = new Date().toISOString();
+		sessionNode.version = sessionNode?.version+1;
+		await sessionModel.save(sessionNode);
+
 		session = sessionNode;
 		session.user = userNode;
 

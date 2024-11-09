@@ -9,6 +9,8 @@ export class Result {
 	addError = (code, path, message) => {
 		if (this.success === true) this.success = false;
 		this.errors.push(new Error(code, path, message))
+
+		return this;
 	}
 
 	addErrorAndLog = (code, path, message, type, note, component = undefined) => {

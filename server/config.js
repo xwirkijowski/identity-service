@@ -10,7 +10,8 @@ const config = {}
 // Defaults
 const defaults = {
 	server: {
-		port: 4000
+		port: 4000,
+		host: undefined
 	},
 	redis: {
 		port: 6379
@@ -20,6 +21,7 @@ const defaults = {
 // Server configuration block
 config.server = {
 	port: process.env?.SERVER_PORT ?? defaults.server.port,
+	host: process.env?.SERVER_HOST ?? defaults.server.host
 }
 
 !process.env?.SERVER_PORT && new InternalWarning(`No SERVER_PORT specified, using default ${defaults.server.port}`);

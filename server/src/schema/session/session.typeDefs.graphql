@@ -3,7 +3,8 @@ type Session {
     id: String!
     user: User
     userAgent: String
-    loggedInAt: Timestamp
+    userAddress: String
+    createdAt: Timestamp
 }
 
 extend type Query {
@@ -26,11 +27,6 @@ input LogInInput {
     password: String!
 }
 
-input LogOutInput {
-    "Session to close (log out) (ObjectId)"
-    sessionId: ID!
-}
-
 input CreateTokenInput {
     "User Id of the desired API user"
     userId: ID!
@@ -48,8 +44,11 @@ type LogInPayload {
 
 type LogOutPayload {
     result: Result!
-    user: NormalUser
-    sessionId: String
+}
+
+type LogOutAllPayload {
+    result: Result!
+    invalidatedSessions: Int
 }
 
 type CreateTokenPayload {
@@ -58,13 +57,30 @@ type CreateTokenPayload {
     token: String
 }
 
+type DeleteSessionPayload {
+    result: Result!
+}
+
+type DeleteAllSessionsPayload {
+    result: Result!
+    invalidatedSessions: Int
+}
+
 # Mutations
 
 extend type Mutation {
     "Log in normal user"
     logIn(input: LogInInput): LogInPayload
-    "Log out normal user"
-    logOut(input: LogOutInput): LogOutPayload
+    "Log out current user out of current session"
+    logOut: LogOutPayload
+    "Log out current user out of all sessions"
+    logOutAll: LogOutAllPayload
+
     "Create JWT for API user use"
     createToken(input: CreateTokenInput): CreateTokenPayload
+
+    "Delete a specific session"
+    deleteSession(sessionId: String): DeleteSessionPayload
+    "Delete all sessions for specified user"
+    deleteAllSessions(userId: ID): DeleteAllSessionsPayload
 }

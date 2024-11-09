@@ -15,13 +15,12 @@ export default mongoose.model(
 		password: {
 			type: String,
 		},
+		permissions: [{type: String}],
 		createdAt: {
 			type: String,
-			required: true
 		},
 		createdBy: {
 			type: mongoose.ObjectId,
-			required: true
 		},
 		updatedAt: {
 			type: String,

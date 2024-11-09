@@ -5,13 +5,20 @@ const sessionSchema = new Schema(
 	'session', {
 		userId: { type: 'string' },
 		userAgent: { type: 'string' },
-		loggedInAt: { type: 'date' }
+		userAddr: { type: 'string' },
+		createdAt: { type: 'date' },
+		updatedAt: { type: 'date'} ,
+		version: { type: 'number' },
 	},
 	{
-		dataStructure: 'HASH'
+		dataStructure: 'JSON',
 	}
 );
 
 const sessionRepository = new Repository(sessionSchema, redisClient);
+
+redisClient.on('ready', async () => {
+	await sessionRepository.createIndex();
+})
 
 export default sessionRepository;

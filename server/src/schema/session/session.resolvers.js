@@ -9,28 +9,31 @@ export default {
 		id: (obj) => {
 			return obj[EntityId] || null;
 		},
-		user: async ({userId}, __, {dataSources: {user}}) => {
-			return (userId) ? await user.findOne({_id: userId}) : null
+		user: (_, __, {session}) => {
+			return (session) ? session.user : null;
+		},
+		userAddress: (obj) => {
+			return obj.userAddr;
 		}
 	},
 	Query: {
-		currentUser: async (_, __, {dataSources: {user}, session}) => {
-			return (session) ? await user.findOne({_id: session.userId}) : null;
+		currentUser: (_, __, {models: {user}, session}) => {
+			return (session) ? session.user : null
 		},
-		currentSession: async (_, __, {session}) => {
+		currentSession: (_, __, {session}) => {
 			return (session) ? session : null;
 		}
 	},
 	Mutation: {
-		logIn: async (_, {input}, {dataSources: {user, session}, systemStatus, req}) => {
+		logIn: async (_, {input}, {models: {user, session}, systemStatus, req}, info) => {
 			check.needs('redis');
 
 			const result = new Result();
 
 			// Validate required input fields
-			check.NN(input);
-			check.NN(input.email);
-			check.NN(input.password);
+			check.validate(input, 'object');
+			check.validate(input.email, 'string');
+			check.validate(input.password, 'string');
 
 			// Normalize user input
 			input.email = input.email.normalize('NFKD');
@@ -41,23 +44,26 @@ export default {
 
 			// If no user found or if user found but passwords do not match return operation failed
 			if (!userNode || userNode.userType !== 'NORMAL' || input.password !== userNode?.password) {
-				result.addError('INVALID_CREDENTIALS');
-				return result.response();
+				return result.addError('INVALID_CREDENTIALS').response();
 			}
 
 			// Set up variables
 			const timestamp = new Date();
 			const req_userAgent = req.get('User-Agent').normalize('NFKD') || null;
+			const req_userIPAddress = req.socket.remoteAddress;
 
 			// Create session
 			const sessionNode = await session.save({
 				userId: userNode._id.toString(),
 				userAgent: req_userAgent,
-				loggedInAt: timestamp.toISOString()
+				userAddr: req_userIPAddress,
+				createdAt: timestamp.toISOString(),
+				updatedAt: null,
+				version: 0
 			});
 
-			// Set session to expire in 1 hour (3600 s)
-			session.expire(sessionNode[EntityId], 3600)
+			// Set session to expire in 2 hours
+			session.expire(sessionNode[EntityId], 60 * 60 * 2) // (60s * 60m * 2h)
 
 			if (sessionNode.userId !== undefined && sessionNode.userId !== null) {
 				return {
@@ -69,20 +75,64 @@ export default {
 
 			// Default to failed
 			return {
-				result: {
-					success: false
-				}
+				result: false
 			}
 		},
-		logOut: async (_, {input}, {dataSources: {session}, systemStatus, req}) => {
-			if (systemStatus.redis !== 'connected') throw new GraphQLError('Session domain unavailable', {extensions: ['INTERNAL_SERVER_ERROR']});
+		logOut: async (_, __, {session, models, systemStatus}) => {
+			if (!session) { return {result: true}; }
 
-			// Validate required input fields
-			check.NN(input);
+			check.needs('redis');
 
-			// Default to failed
-			return {
-				result: false
+			const result = new Result();
+
+			// Remove session from Redis
+			await models.session.remove(session[EntityId]);
+
+			// Verify that session has been deleted
+			const sessionCheck = await models.session.fetch(session[EntityId]);
+
+			if (sessionCheck.userId === undefined) {
+				// Set context session to null
+				session = null;
+
+				return result.response(true)
+			} else {
+				return result.addErrorAndLog('SESSION_DELETION_FAILED', null, null, 'error', 'Failed to log out a user!', 'Session').response(true)
+			}
+		},
+		logOutAll: async (_, __, {session, models}) => {
+			if (!session) { return {result: true}; }
+
+			check.needs('redis');
+
+			const result = new Result();
+
+			let sessionCount;
+
+			// Collect all sessions
+			const sessionNodes = await models.session.search().where('userId').eq(session.userId).return.all()
+
+			// Map session Ids from all sessions
+			const sessionIds = sessionNodes.map(node => node[EntityId]);
+			sessionCount = sessionIds.length;
+
+			// Remove session from Redis
+			await models.session.remove(sessionIds);
+
+			// Verify that sessions has been deleted
+			const sessionsCheckNodes = await models.session.fetch(sessionIds);
+			const sessionCheckIds = sessionsCheckNodes.filter(node => node?.userId);
+
+			if (sessionCheckIds.length === 0) {
+				// Set context session to null
+				session = null;
+
+				return {
+					result: result.response(false),
+					invalidatedSessions: sessionCount
+				}
+			} else {
+				return result.addErrorAndLog('SESSION_DELETION_ALL_FAILED', null, null, 'error', 'Failed to log our user out of all sessions!', 'Session').response(true)
 			}
 		}
 	}

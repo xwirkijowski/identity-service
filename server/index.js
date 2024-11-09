@@ -7,6 +7,8 @@ import handleSession from "./src/utilities/auth.js";
 
 // Import final schema
 import schema from './src/schema.js';
+
+// Import data models
 import userModel from './src/models/user.model.js';
 import sessionModel from "./src/models/session.model.js";
 
@@ -15,7 +17,7 @@ setupRedis(redisClient);
 
 export {redisClient};
 
-// Setup Mongoose connection to the database
+// Setup Mongoose
 await setupMongo();
 
 // Construct Apollo server instance

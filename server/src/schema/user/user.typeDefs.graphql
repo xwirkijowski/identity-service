@@ -2,15 +2,15 @@ union User = NormalUser | APIUser
 
 type NormalUser {
     "Unique Id of the user"
-    id: ID!
+    id: ID
     "User's email address"
-    email: EmailAddress!
+    email: EmailAddress
 
     "List of user's permissions"
     permissions: [PERMISSION]
 
     "Who created this user"
-    createdBy: User!
+    createdBy: User
     "When was this user created"
     createdAt: DateTime
     "Who updated this user"
@@ -23,10 +23,10 @@ type NormalUser {
 
 type APIUser {
     "Unique Id of the user"
-    id: ID!
+    id: ID
 
     "Who created this user"
-    createdBy: User!
+    createdBy: User
     "When was this user created"
     createdAt: DateTime
     "Who updated this user"
@@ -91,7 +91,6 @@ type DeleteUserPayload {
 
 type RegisterPayload {
     result: Result!
-    user: NormalUser
 }
 
 # Mutations

@@ -14,7 +14,6 @@ import sessionModel from "./src/models/session.model.js";
 
 // Setup Redis client
 setupRedis(redisClient);
-
 export {redisClient};
 
 // Setup Mongoose
@@ -32,6 +31,8 @@ const { url } = await startStandaloneServer(server, {
 		host: config.server.host
 	},
 	context: async ({req, }) => {
+		// @todo Rate limit, max depth, complexity
+
 		const session = await handleSession(req);
 
 		return {

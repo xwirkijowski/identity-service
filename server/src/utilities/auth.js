@@ -7,7 +7,7 @@ import {EntityId} from "redis-om";
 const deny = () => {
 	throw new GraphQLError('Invalid credentials', {
 		extensions: {
-			code: 'UNAUTHENTICATED',
+			code: 'UNAUTHORIZED',
 			http: { status: 401 },
 		}
 	});
@@ -36,7 +36,7 @@ export default async (req) => {
 		}
 
 		// Get user from database
-		const userNode = await userModel.findOne({_id: sessionNode.userId}).select('-password');
+		const userNode = await userModel.findOne({_id: sessionNode.userId}, '-password');
 
 		if (!userNode) { // This can happen when user account is deleted
 			await sessionModel.remove(token);

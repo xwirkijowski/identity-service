@@ -5,7 +5,7 @@ import {GraphQLError} from "graphql";
 import {EntityId} from "redis-om";
 
 const deny = () => {
-	throw new GraphQLError('Credential manipulation detected', {
+	throw new GraphQLError('Invalid credentials', {
 		extensions: {
 			code: 'UNAUTHENTICATED',
 			http: { status: 401 },

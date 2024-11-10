@@ -16,6 +16,7 @@
     "@graphql-tools/merge": "^9.0.8",
     "@graphql-tools/schema": "^10.0.7",
     "graphql": "^16.9.0",
+    "graphql-scalars": "^1.23.0",
     "mongoose": "^8.8.0",
     "redis": "^4.7.0",
     "redis-om": "^0.4.7"

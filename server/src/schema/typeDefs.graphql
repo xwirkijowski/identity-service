@@ -3,7 +3,7 @@ type Query {
 }
 
 type HealthCheck {
-    timestamp: Timestamp!
+    timestamp: DateTime!
     internal: InternalStatus!
     domains: DomainStatus!
 }
@@ -31,4 +31,4 @@ type Error {
 
 type Mutation
 
-scalar Timestamp
+scalar DateTime

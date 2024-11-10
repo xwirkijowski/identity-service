@@ -44,6 +44,9 @@ export default {
 		logIn: async (_, {input}, {models: {user, session}, systemStatus, req}, info) => {
 			check.needs('redis');
 
+			// Check if user logged in
+			if (session) return new Result().addError('ALREADY_LOGGED_IN').response();
+
 			const result = new Result();
 
 			// Validate required input fields
@@ -100,9 +103,10 @@ export default {
 			}
 		},
 		logOut: async (_, __, {session, models, systemStatus}) => {
-			if (!session) { return {result: true}; }
-
 			check.needs('redis');
+
+			// Check if user logged in
+			if (!session) return new Result().addError('NOT_LOGGED_IN').response();
 
 			const result = new Result();
 
@@ -122,9 +126,10 @@ export default {
 			}
 		},
 		logOutAll: async (_, __, {session, models}) => {
-			if (!session) { return {result: true}; }
-
 			check.needs('redis');
+
+			// Check if user logged in
+			if (!session) return new Result().addError('NOT_LOGGED_IN').response();
 
 			const result = new Result();
 

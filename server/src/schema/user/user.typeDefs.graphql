@@ -4,16 +4,19 @@ type NormalUser {
     "Unique Id of the user"
     id: ID!
     "User's email address"
-    email: String!
+    email: EmailAddress!
+
+    "List of user's permissions"
+    permissions: [PERMISSION]
 
     "Who created this user"
     createdBy: User!
     "When was this user created"
-    createdAt: Timestamp
+    createdAt: DateTime
     "Who updated this user"
     updatedBy: User
     "When was this user updated"
-    updatedAt: Timestamp
+    updatedAt: DateTime
     "Current version (how many user has been updated)"
     version: Int
 }
@@ -25,11 +28,11 @@ type APIUser {
     "Who created this user"
     createdBy: User!
     "When was this user created"
-    createdAt: Timestamp
+    createdAt: DateTime
     "Who updated this user"
     updatedBy: User
     "When was this user updated"
-    updatedAt: Timestamp
+    updatedAt: DateTime
     "Current version (how many user has been updated)"
     version: Int
 }
@@ -46,21 +49,27 @@ enum USER_TYPE {
     API
 }
 
+enum PERMISSION {
+    ADMIN
+}
+
+scalar EmailAddress
+
 # Inputs
 
 input CreateUserInput {
-    email: String!
+    email: EmailAddress!
     password: String
 }
 
 input UpdateUserInput {
     userId: ID!
-    email: String
+    email: EmailAddress
     password: String
 }
 
 input RegisterInput {
-    email: String!
+    email: EmailAddress!
     password: String!
 }
 

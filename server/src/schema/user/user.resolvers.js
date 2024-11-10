@@ -1,7 +1,9 @@
+import {EmailAddressResolver} from "graphql-scalars";
 import {Result} from "../../utilities/result.js";
 import {setupMeta, check} from "../../utilities/resolverHelpers.js";
 
 export default {
+	EmailAddress: EmailAddressResolver,
 	User: {
 		__resolveType: (obj) => {
 			switch (obj.userType) {

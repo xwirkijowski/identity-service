@@ -8,9 +8,9 @@ type Session {
     "Remote host IP address used while creating the seesion"
     userAddress: String
     "Session creation timestamp"
-    createdAt: Timestamp
+    createdAt: DateTime
     "Session last refresh timestamp"
-    updatedAt: Timestamp
+    updatedAt: DateTime
     "Session refresh count, also equivalent of how many requests were made with the session"
     version: Int
 }
@@ -31,7 +31,7 @@ extend type Query {
 
 input LogInInput {
     "The users e-mail address"
-    email: String!
+    email: EmailAddress!
 
     "The users password"
     password: String!

@@ -4,6 +4,8 @@ export class Result {
 	constructor (result, errors) {
 		this.success = result||true;
 		this.errors = errors||[];
+
+		return this;
 	}
 
 	addError = (code, path, message) => {

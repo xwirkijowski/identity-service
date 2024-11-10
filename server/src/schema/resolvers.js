@@ -1,4 +1,7 @@
+import {DateTimeResolver} from 'graphql-scalars';
+
 export default {
+	DateTime: DateTimeResolver,
 	Result: {
 		success: (obj) => {
 			return ((typeof obj === 'boolean' && obj === true) || obj?.success === true);

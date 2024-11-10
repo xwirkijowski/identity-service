@@ -17,17 +17,21 @@ export default {
 		}
 	},
 	Query: {
-		session: async (_, {sessionId}, {models}) => {
+		session: async (_, {sessionId}, {session, models}) => {
 			check.needs('redis');
 			check.validate(sessionId, 'string');
+			check.auth(session, 'ADMIN');
 
 			const sessionNode = await models.session.fetch(sessionId);
 
 			return (sessionNode?.userId)?sessionNode:null;
 		},
-		sessionsByUser: async (_, {userId}, {models}) => {
+		sessionsByUser: async (_, {userId}, {session, models}) => {
 			check.needs('redis');
 			check.validate(userId, 'string');
+
+			// Allow users to check their own sessions
+			check.auth(session, 'ADMIN', true, (session && userId !== session?.userId));
 
 			const sessionNodes = await models.session.search().where('userId').eq(userId).return.all()
 

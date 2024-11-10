@@ -39,16 +39,21 @@ export default {
 		},
 	},
 	Query: {
-		user: async (_, args, {models: {user}}) => {
-			return await user.findOne({id: args.userId}).select('-password');
+		user: async (_, args, {session, models: {user}}) => {
+			return (check.auth(session, 'ADMIN'))
+				? await user.findOne({id: args.userId}).select('-password')
+				: null;
 		},
-		users: async (_, __, {models: {user}}) => {
-			return await user.find().select('-password');
+		users: async (_, __, {session, models: {user}}) => {
+			return (check.auth(session, 'ADMIN'))
+				? await user.find().select('-password')
+				: null;
 		}
 	},
 	Mutation: {
 		createUser: async (_, {input}, {session, models: {user}, systemStatus}) => {
 			check.needs('db')
+			check.auth(session, 'CREATE_USER');
 
 			const result = new Result();
 
@@ -95,9 +100,11 @@ export default {
 		},
 		updateUser: async (_, {input}, {session, models: {user}, systemStatus}) => {
 			check.needs('db')
+			check.auth(session, 'UPDATE_USER');
 		},
 		deleteUser: async (_, {input}, {session, models: {user}, systemStatus}) => {
 			check.needs('db')
+			check.auth(session, 'DELETE_USER');
 		},
 		register: async (_, {input}, {session, models: {user}, systemStatus}) => {
 			check.needs('db')
@@ -113,7 +120,6 @@ export default {
 			input.email = input.email.normalize('NFKD');
 			input.password = input.password.normalize('NFKD');
 
-			// Validate password
 			// Validate password
 			if (input.password.length < 16) {
 				return result.addError('PASSWORD_TOO_SHORT', 'password', 'Password must be at least 16 characters').response();
@@ -136,12 +142,7 @@ export default {
 
 			const userNode = await user.create(input)
 
-			if (userNode) { // @todo: Add proper checks
-				return {
-					result: result.response(false),
-					user: userNode
-				}
-			}
+			if (userNode) return result.response();
 
 			// Default to failed
 			return {

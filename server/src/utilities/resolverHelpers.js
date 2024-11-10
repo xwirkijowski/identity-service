@@ -5,8 +5,8 @@ export const check = {
 	/**
 	 * Validate if defined and non-null
 	 *
-	 * @param	input					Input field
-	 * @param	type					Expected type of input
+	 * @param	input					Input field.
+	 * @param	type					Expected type of input.
 	 * @return 	Boolean|GraphQLError	If valid return true, if invalid throw input error.
 	 */
 	validate: (input, type) => {
@@ -15,10 +15,64 @@ export const check = {
 	},
 	needs: (system) => {
 		if (system === 'db' && $S.db !== 'connected') {
-			throw new GraphQLError('Database unavailable.', {extensions: ['INTERNAL_SERVER_ERROR']});
+			throw new GraphQLError('Database unavailable.', { extensions: { code: 'INTERNAL_SERVER_ERROR' } });
 		} else if (system === 'redis' && $S.redis !== 'connected') {
-			throw new GraphQLError('Session database unavailable.', {extensions: ['INTERNAL_SERVER_ERROR']});
+			throw new GraphQLError('Session database unavailable.', { extensions: { code: 'INTERNAL_SERVER_ERROR' } });
 		}
+	},
+	/**
+	 * @description
+	 *
+	 * Check if user has permissions to run this operation (query or mutation).
+	 * If no permission present, only checks if there is a user logged in.	 *
+	 * If user is not authorized, returns an error.
+	 *
+	 * @param 	session					Current session from context.
+	 * @param 	permission				The permission to check for in current user's permissions.
+	 * @param	silent					If set to true, will not return unauthorized error, only `false`.
+	 * @param	altCondition			Alternative condition to check against in user does not have permission.
+	 *
+	 * @return	Boolean|GraphQLError	If checks pass, return true, else error.
+	 */
+	auth: (session, permission = undefined, silent = false, altCondition) => {
+		if (silent && typeof silent !== 'boolean') return false; // Typo precaution
+
+		// Handle no session
+		if (!session) {
+			throw new GraphQLError('Unauthenticated. You need to be logged in to access this resource.', {
+				extensions: {
+					code: 'UNAUTHORIZED'
+				},
+				http: { status: 401 }
+			});
+		}
+
+		// If permission not defined return true, at this point authentication confirmed.
+		if (!permission) return true;
+
+		let authorized = false; // Default to false
+
+		const userPermissions = session.user.permissions; // Get user permissions
+
+		// Check if user has specified permission or is `ADMIN`.
+		if (userPermissions.includes(permission) || userPermissions.includes('ADMIN')) authorized = true;
+
+		if (authorized === false && typeof altCondition === 'boolean' && altCondition === true) {
+			authorized = true;
+		}
+
+		// Handle user not authorized
+		if (!authorized && silent === false) {
+			throw new GraphQLError('Unauthorized. You do not have access to this resource.', {
+				extensions: {
+					code: 'FORBIDDEN'
+				},
+				http: { status: 403 }
+			});
+		}
+
+		// Return check result
+		return authorized;
 	}
 }
 

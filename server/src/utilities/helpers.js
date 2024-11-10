@@ -76,6 +76,30 @@ export const check = {
 	}
 }
 
+export const getIP = (req) => {
+	let ip;
+
+	if (req.headers.get("p9s-user-ip") !== null) { // Check custom header
+		ip = req.headers.get("p9s-user-ip");
+	} else if (req.headers.get("x-forwarded-for") !== null) { // Check x-forwarder-for header
+		ip = req.headers.get("x-forwarded-for").split(",")[0];
+	} else if (req.headers.get("x-real-ip") !== null) { // Check x-real-ip header @todo needs testing
+		ip = req.headers.get("x-real-ip");
+	} else if (req.connection && req.connection.remoteAddress !== null) { // Check connection @todo needs testing
+		ip = req.connection.remoteAddress;
+	} else if (req.socket && req.socket.remoteAddress !== null) { // Check socket @todo needs testing
+		ip = req.socket.remoteAddress;
+	} else { // No IP found
+		throw new GraphQLError('Cannot find IP address.', {
+			extensions: {
+				code: 'INTERNAL_SERVER_ERROR'
+			}
+		});
+	}
+
+	return ip;
+}
+
 export const setupMeta = (session, input, node = undefined, mode = 'create') => {
 	const timestamp = new Date().toISOString();
 

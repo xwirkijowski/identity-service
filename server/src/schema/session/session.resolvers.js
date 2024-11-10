@@ -1,6 +1,6 @@
 import { EntityId } from 'redis-om'
 import { Result } from "../../utilities/result.js";
-import { check } from "../../utilities/resolverHelpers.js";
+import {check, getIP} from "../../utilities/helpers.js";
 
 export default {
 	Session: { // No need for auth checks, since output based on session.
@@ -76,7 +76,7 @@ export default {
 			// Set up variables
 			const timestamp = new Date();
 			const req_userAgent = req.get('User-Agent').normalize('NFKD') || null;
-			const req_userIPAddress = req.socket.remoteAddress;
+			const req_userIPAddress = getIP(req);
 
 			// Create session
 			const sessionNode = await models.session.save({

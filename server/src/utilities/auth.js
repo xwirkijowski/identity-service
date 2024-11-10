@@ -3,6 +3,7 @@ import sessionModel from "../models/session.model.js";
 import userModel from "../models/user.model.js";
 import {GraphQLError} from "graphql";
 import {EntityId} from "redis-om";
+import {getIP} from "./helpers.js";
 
 const deny = () => {
 	throw new GraphQLError('Invalid credentials', {
@@ -29,7 +30,8 @@ export default async (req) => {
 
 		// Compare user-agent and IP address
 		const req_userAgent = req.headers['user-agent'];
-		const req_userIPAddress = req.socket.remoteAddress
+		const req_userIPAddress = getIP(req);
+
 		if (req_userAgent !== sessionNode.userAgent || req_userIPAddress !== sessionNode.userAddr) {
 			await sessionModel.remove(token)
 			deny();

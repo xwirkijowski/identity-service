@@ -1,6 +1,6 @@
 import {EmailAddressResolver} from "graphql-scalars";
 import {Result} from "../../utilities/result.js";
-import {setupMeta, check} from "../../utilities/resolverHelpers.js";
+import {setupMeta, check} from "../../utilities/helpers.js";
 
 export default {
 	EmailAddress: EmailAddressResolver,

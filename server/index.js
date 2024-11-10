@@ -21,7 +21,9 @@ await setupMongo();
 
 // Construct Apollo server instance
 const server = new ApolloServer({
-	schema
+	schema,
+	includeStacktraceInErrorResponses: (config.server.env === 'development'),
+	introspection: (config.server.env === 'development')
 })
 
 // Launch the Apollo server
@@ -32,6 +34,7 @@ const { url } = await startStandaloneServer(server, {
 	},
 	context: async ({req, }) => {
 		// @todo Rate limit, max depth, complexity
+		// @todo Add check for client app to prevent direct use.
 
 		const session = await handleSession(req);
 
@@ -51,4 +54,4 @@ const { url } = await startStandaloneServer(server, {
 	},
 })
 
-$L.success(`Live at ${url}`)
+$L.success(`Live at ${url}, running in ${config.server.env.toLowerCase()} environment...`)

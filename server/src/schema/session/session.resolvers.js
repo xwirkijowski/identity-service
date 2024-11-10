@@ -1,11 +1,9 @@
-import { GraphQLError } from 'graphql';
-import { scrypt } from "node:crypto";
 import { EntityId } from 'redis-om'
 import { Result } from "../../utilities/result.js";
-import {setupMeta, check} from "../../utilities/resolverHelpers.js";
+import { check } from "../../utilities/resolverHelpers.js";
 
 export default {
-	Session: {
+	Session: { // No need for auth checks, since output based on session.
 		id: (obj) => {
 			return obj[EntityId] || null;
 		},

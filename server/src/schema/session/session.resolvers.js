@@ -63,6 +63,11 @@ export default {
 				return result.addError('INVALID_CREDENTIALS').response();
 			}
 
+			// Check how many sessions open
+			const sessionCount = await session.search().where('userId').eq(userNode._id).return.count();
+			// If more than 3, fail to log in
+			if (sessionCount >= 3) return result.addError('TOO_MANY_SESSIONS').response();
+
 			// Set up variables
 			const timestamp = new Date();
 			const req_userAgent = req.get('User-Agent').normalize('NFKD') || null;

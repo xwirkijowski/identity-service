@@ -41,7 +41,7 @@ export default {
 		}
 	},
 	Mutation: {
-		logIn: async (_, {input}, {models: {user, session}, systemStatus, req}, info) => {
+		logIn: async (_, {input}, {models, req, session}, info) => {
 			check.needs('redis');
 
 			// Check if user logged in
@@ -59,7 +59,7 @@ export default {
 			input.password = input.password.normalize('NFKD');
 
 			// Get user by email
-			const userNode = await user.findOne({email: input.email})
+			const userNode = await models.user.findOne({email: input.email})
 
 			// If no user found or if user found but passwords do not match return operation failed
 			if (!userNode || userNode.userType !== 'NORMAL' || input.password !== userNode?.password) {
@@ -67,7 +67,7 @@ export default {
 			}
 
 			// Check how many sessions open
-			const sessionCount = await session.search().where('userId').eq(userNode._id).return.count();
+			const sessionCount = await models.session.search().where('userId').eq(userNode._id).return.count();
 			// If more than 3, fail to log in
 			if (sessionCount >= 3) return result.addError('TOO_MANY_SESSIONS').response();
 
@@ -77,7 +77,7 @@ export default {
 			const req_userIPAddress = req.socket.remoteAddress;
 
 			// Create session
-			const sessionNode = await session.save({
+			const sessionNode = await models.session.save({
 				userId: userNode._id.toString(),
 				userAgent: req_userAgent,
 				userAddr: req_userIPAddress,
@@ -87,7 +87,7 @@ export default {
 			});
 
 			// Set session to expire in 2 hours
-			session.expire(sessionNode[EntityId], 60 * 60 * 2) // (60s * 60m * 2h)
+			await models.session.expire(sessionNode[EntityId], 60 * 60 * 2) // (60s * 60m * 2h)
 
 			if (sessionNode.userId !== undefined && sessionNode.userId !== null) {
 				return {
@@ -102,7 +102,7 @@ export default {
 				result: false
 			}
 		},
-		logOut: async (_, __, {session, models, systemStatus}) => {
+		logOut: async (_, __, {session, models}) => {
 			check.needs('redis');
 
 			// Check if user logged in

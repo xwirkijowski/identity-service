@@ -92,16 +92,9 @@ export default {
 			await models.session.expire(sessionNode[EntityId], 60 * 60 * 2) // (60s * 60m * 2h)
 
 			if (sessionNode.userId !== undefined && sessionNode.userId !== null) {
-				return {
-					result: result.response(false),
-					user: userNode,
-					sessionId: sessionNode[EntityId],
-				}
-			}
-
-			// Default to failed
-			return {
-				result: false
+				return result.response(true, { user: userNode, sessionId: sessionNode[EntityId]} )
+			} else {
+				return { result: false }
 			}
 		},
 		logOut: async (_, __, {session, models}) => {
@@ -122,9 +115,9 @@ export default {
 				// Set context session to null
 				session = null;
 
-				return result.response(true)
+				return result.response()
 			} else {
-				return result.addErrorAndLog('SESSION_DELETION_FAILED', null, null, 'error', 'Failed to log out a user!', 'Session').response(true)
+				return result.addErrorAndLog('SESSION_DELETE_FAILED', null, null, 'error', 'Failed to log out a user!', 'Session').response()
 			}
 		},
 		logOutAll: async (_, __, {session, models}) => {
@@ -155,12 +148,9 @@ export default {
 				// Set context session to null
 				session = null;
 
-				return {
-					result: result.response(false),
-					invalidatedSessions: sessionCount
-				}
+				return result.response(true, {invalidatedSessions: sessionCount});
 			} else {
-				return result.addErrorAndLog('SESSION_DELETION_ALL_FAILED', null, null, 'error', 'Failed to log our user out of all sessions!', 'Session').response(true)
+				return result.addErrorAndLog('SESSION_DELETE_ALL_FAILED', null, null, 'error', 'Failed to log our user out of all sessions!', 'Session').response(true)
 			}
 		}
 	}

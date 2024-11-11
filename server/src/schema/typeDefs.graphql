@@ -21,6 +21,7 @@ type DomainStatus {
 type Result {
     success: Boolean!
     errors: [Error]
+    errorCodes: [String]
 }
 
 type Error {

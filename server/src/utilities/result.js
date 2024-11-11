@@ -4,20 +4,31 @@ export class Result {
 	constructor (result, errors) {
 		this.success = result||true;
 		this.errors = errors||[];
+		this.errorCodes = (Array.isArray(errors)) ? errors?.map(err => err.code)||[] : [];
 
 		return this;
 	}
 
+	#pushErrorCode = (code) => {
+		if (!this.errorCodes.contains(code)) this.errorCodes.push(code);
+	}
+
+	hasErrors = () => {
+		return (this.errors.length > 0);
+	}
+
 	addError = (code, path, message) => {
 		if (this.success === true) this.success = false;
-		this.errors.push(new ResultError(code, path, message))
+		this.errors.push(new ResultError(code, path, message));
+		this.#pushErrorCode(code);
 
 		return this;
 	}
 
 	addErrorAndLog = (code, path, message, type, note, component = undefined) => {
 		if (this.success === true) this.success = false;
-		this.errors.push(new ResultError(code, path, message))
+		this.errors.push(new ResultError(code, path, message));
+		this.#pushErrorCode(code);
 
 		if (typeof type === 'string' && ['error', 'warn', 'info', 'log'].includes(type)) {
 			$L[type](`${note?note+' ':''}Code: ${code}`, undefined, component);
@@ -42,7 +53,8 @@ export class Result {
 		return (full === true ) ? {
 			result: {
 				success: this.success,
-				errors: this.errors
+				errors: this.errors,
+				errorCodes: this.errorCodes
 			},
 			...include
 		} : { success: this.success, errors: this.errors };

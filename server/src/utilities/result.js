@@ -10,14 +10,14 @@ export class Result {
 
 	addError = (code, path, message) => {
 		if (this.success === true) this.success = false;
-		this.errors.push(new Error(code, path, message))
+		this.errors.push(new ResultError(code, path, message))
 
 		return this;
 	}
 
 	addErrorAndLog = (code, path, message, type, note, component = undefined) => {
 		if (this.success === true) this.success = false;
-		this.errors.push(new Error(code, path, message))
+		this.errors.push(new ResultError(code, path, message))
 
 		if (typeof type === 'string' && ['error', 'warn', 'info', 'log'].includes(type)) {
 			$L[type](`${note?note+' ':''}Code: ${code}`, undefined, component);
@@ -26,7 +26,15 @@ export class Result {
 		return this;
 	}
 
-	response = (full = true) => {
+	/**
+	 * @description	Build and return `Result` object. Allows for additional data inclusion if .
+	 *
+	 * @param 		full		Boolean
+	 * @param 		include		Object
+	 *
+	 * @returns 	{*|{result: {success: (*|boolean), errors: (*|*[])}}|{success: (*|boolean), errors: (*|*[])}}
+	 */
+	response = (full = true, include = {}) => {
 		if (this.errors.length !== 0) {
 			this.success = false;
 		}
@@ -35,12 +43,13 @@ export class Result {
 			result: {
 				success: this.success,
 				errors: this.errors
-			}
+			},
+			...include
 		} : { success: this.success, errors: this.errors };
 	}
 }
 
-export class Error {
+export class ResultError {
 	constructor(code, path = undefined, message = undefined) {
 		this.code = code;
 		this.path = path || null;

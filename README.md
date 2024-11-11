@@ -78,12 +78,33 @@ Resource servers need to look up the session for authentication and the attached
 
 ### Security
 
-By its nature, this API server needs to properly control access to sensitive data. If this API becomes compromised, security of other services may be at stake. This makes proper security (i.e. rate limiting, access control) is a primary concern.
+By its nature, this API server needs to properly control access to sensitive data. If this API becomes compromised, security of other services may be at stake. This makes proper security (i.e. rate limiting, access control) a primary concern.
 
 Identity service checks every request by checking if the request contains a `sessionId`, validating it and looking it up in the Redis database, then looking the user up in the user MongoDB collection. While this increases the processing time of the request, it also covers unexpected edge cases when token invalidation did not happen properly, or if user access has been suddenly revoked.
 
+#### Currently implemented security features
+1. Extra variables used in session verification (user-agent and IP address);
+2. Session limit (3 sessions per user);
+3. Simple schema-level authentication and authorization checks;
+4. Password policy:
+   - From 16 to 128 characters in length;
+   - Min. 1 of lowercase `[a-z]`, uppercase `[A-Z]`, number `[0-9]` and special `[^a-zA-Z0-9]` character;
+   - Cannot equal email address.
+
+#### Planned security features
+1. Rate limiting
+2. Complexity checks — primarily in event of compromised session
+
+### Unauthorized Access Handling
+Let's imagine a scenario where a threat actor has gained access to a session identifier, managed to impersonate victim's user-agent and is on the victim's network (same IP address). Identity service now cannot differentiate this attacker from the victim.
+
+Implementing checks for specific headers (i.e. client app) with static values do not make sense, since they can be easily used by the attacker.
+
+A simple way to avoid this problem altogether would be to limit access to the server only to specific IPs, like backend servers, but this would prevent clients without a backend (CSR apps) from accessing this API.
 
 
-Currently implemented security features are as follows:
-1. Extra variables used in session verification (currently only from headers)
-2. Session limit (3 sessions per user)
+Let's also assume that somehow we became aware of this unauthorized access and that the threat actor has begun performing some disruptive actions.
+
+We can disable the Redis database to make authentication impossible, therefor completely close of access to normal users.
+
+In an event a session invalidation is ineffective due to an exception or database issues, there should be an alternative way to automatically invalidate all sessions.

@@ -10,14 +10,48 @@ export const check = {
 	 * @return 	Boolean|GraphQLError	If valid return true, if invalid throw input error.
 	 */
 	validate: (input, type) => {
-		if (input !== undefined && input !== null && typeof input === type) return true;
-		throw new GraphQLError('Input null or wrong type', { extensions: { code: 'BAD_USER_INPUT' } });
+		if (input !== undefined // Is defined
+			&& input !== null // Is not null
+			&& (typeof input === type || type === 'array' && Array.isArray(input)) // Equals expected type
+			&& ((typeof input === 'string' && input.length > 0) || true) // String is not empty
+			&& ((type === 'array' && input.length > 0) || true)) return true; // Array is not empty
+		else throw new GraphQLError('Input empty or wrong type', { extensions: { code: 'BAD_USER_INPUT' } });
 	},
 	needs: (system) => {
 		if (system === 'db' && $S.db !== 'connected') {
 			throw new GraphQLError('Database unavailable.', { extensions: { code: 'INTERNAL_SERVER_ERROR' } });
 		} else if (system === 'redis' && $S.redis !== 'connected') {
 			throw new GraphQLError('Session database unavailable.', { extensions: { code: 'INTERNAL_SERVER_ERROR' } });
+		}
+	},
+	password: (pwd, email = undefined, result = undefined) => {
+		// @todo Detect non-ASCII characters in password
+
+		if (result) {
+			pwd.length < 16 && result.addError('PASSWORD_TOO_SHORT', 'password', 'Password must be at least 16 characters');
+
+			pwd.length > 128 && result.addError('PASSWORD_TOO_LONG', 'password', 'Password cannot be more than 128 characters long');
+
+			/\s/.test(pwd) && result.addError('PASSWORD_WHITESPACE', 'password', 'Password cannot contain whitespace');
+			!/[A-Z]/.test(pwd) && result.addError('PASSWORD_UPPERCASE_LETTERS', 'password', 'Password must contain at least a single uppercase letter');
+			!/[a-z]/.test(pwd) && result.addError('PASSWORD_LOWERCASE_LETTERS', 'password', 'Password must contain at least a single lowercase letter');
+			!/[0-9]/.test(pwd) && result.addError('PASSWORD_NUMBERS', 'password', 'Password must contain at least a single number');
+			!/[^a-zA-Z0-9]/.test(pwd) && result.addError('PASSWORD_SPECIAL_CHAR', 'password', 'Password must contain at least a single special character');
+
+			// !pwd.match(/[A-Za-z0-9]/g).length < 4
+
+			(email && email === pwd) && result.addError('PASSWORD_EQUALS_EMAIL', 'password', 'Password cannot be your email address');
+
+			return result;
+		} else {
+			return pwd.length >= 16
+				&& pwd.length <= 128
+				&& !/\s/.test(pwd)
+				&& /[a-z]/.test(pwd)
+				&& /[A-Z]/.test(pwd)
+				&& /[0-9]/.test(pwd)
+				&& /[^A-Za-z0-9]/.test(pwd)
+				&& (!email || email && email !== pwd)
 		}
 	},
 	/**
@@ -79,12 +113,12 @@ export const check = {
 export const getIP = (req) => {
 	let ip;
 
-	if (req.headers.get("p9s-user-ip") !== null) { // Check custom header
-		ip = req.headers.get("p9s-user-ip");
-	} else if (req.headers.get("x-forwarded-for") !== null) { // Check x-forwarder-for header
-		ip = req.headers.get("x-forwarded-for").split(",")[0];
-	} else if (req.headers.get("x-real-ip") !== null) { // Check x-real-ip header @todo needs testing
-		ip = req.headers.get("x-real-ip");
+	if (req.headers?.["p9s-user-ip"] !== null) { // Check custom header
+		ip = req.headers["p9s-user-ip"];
+	} else if (req.headers?.["x-forwarded-for"] !== null) { // Check x-forwarder-for header
+		ip = req.headers["x-forwarded-for"].split(",")[0];
+	} else if (req.headers?.["x-real-ip"] !== null) { // Check x-real-ip header @todo needs testing
+		ip = req.headers["x-real-ip"];
 	} else if (req.connection && req.connection.remoteAddress !== null) { // Check connection @todo needs testing
 		ip = req.connection.remoteAddress;
 	} else if (req.socket && req.socket.remoteAddress !== null) { // Check socket @todo needs testing

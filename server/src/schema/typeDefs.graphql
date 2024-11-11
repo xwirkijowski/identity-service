@@ -19,14 +19,23 @@ type DomainStatus {
 }
 
 type Result {
+    "If the mutation was a success"
     success: Boolean!
+    "Array of Error objects"
     errors: [Error]
+    """
+    Array of error codes from all Error objects.
+    Error codes do not repeat.
+    """
     errorCodes: [String]
 }
 
 type Error {
+    "Short descriptive error code used by client application"
     code: String
+    "Path (on input) on which the error has occurred"
     path: String
+    "Error description or explanation"
     msg: String
 }
 

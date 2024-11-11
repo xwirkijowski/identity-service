@@ -1,8 +1,10 @@
 import { EntityId } from 'redis-om'
+import { IPResolver } from "graphql-scalars";
 import { Result } from "../../utilities/result.js";
 import {check, getIP} from "../../utilities/helpers.js";
 
 export default {
+	IPAddress: IPResolver,
 	Session: { // No need for auth checks, since output based on session.
 		id: (obj) => {
 			return obj[EntityId] || null;

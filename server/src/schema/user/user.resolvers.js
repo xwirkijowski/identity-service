@@ -51,7 +51,7 @@ export default {
 		}
 	},
 	Mutation: {
-		createUser: async (_, {input}, {session, models: {user}, systemStatus}) => {
+		createUser: async (_, {input}, {session, models: {user}}) => {
 			check.needs('db')
 			check.auth(session, 'CREATE_USER');
 
@@ -67,11 +67,9 @@ export default {
 			input.password = input.password.normalize('NFKD');
 
 			// Validate password
-			if (input.password.length < 16) {
-				return result.addError('PASSWORD_TOO_SHORT', 'password', 'Password must be at least 16 characters').response();
-			} else if (input.password.length > 128) {
-				return result.addError('PASSWORD_TOO_LONG', 'password', 'Password cannot be more than 128 characters long').response();
-			}
+			check.password(input.password, input.email, result);
+			if (result.hasErrors()) return result.response();
+
 
 			// @Todo: validate e-mail
 
@@ -91,22 +89,44 @@ export default {
 					result: result.response(false),
 					user: userNode
 				}
+			} else {
+				return {
+					result: false
+				}
 			}
+		},
+		updateUser: async (_, {input}, {session, models: {user}}) => {
+			check.needs('db')
+			check.auth(session, 'UPDATE_USER');
 
-			// Default to failed
+
+			const result = new Result();
+
 			return {
 				result: false
 			}
 		},
-		updateUser: async (_, {input}, {session, models: {user}, systemStatus}) => {
-			check.needs('db')
-			check.auth(session, 'UPDATE_USER');
-		},
-		deleteUser: async (_, {input}, {session, models: {user}, systemStatus}) => {
+		deleteUser: async (_, {userId}, {session, models}) => {
 			check.needs('db')
 			check.auth(session, 'DELETE_USER');
+
+			if (session.userId === userId) return new Result().addError('CANNOT_DELETE_YOURSELF', 'User closeAccount instead.').response();
+
+			const result = new Result();
+
+			check.validate(userId, 'string');
+
+			const userNode = await models.user.deleteOne({_id: userId})
+
+			if (userNode.deletedCount === 1) {
+				return result.response(true)
+			} else {
+				return {
+					result: false
+				}
+			}
 		},
-		register: async (_, {input}, {session, models: {user}, systemStatus}) => {
+		register: async (_, {input}, {session, models: {user}}) => {
 			check.needs('db')
 
 			const result = new Result();
@@ -121,11 +141,8 @@ export default {
 			input.password = input.password.normalize('NFKD');
 
 			// Validate password
-			if (input.password.length < 16) {
-				return result.addError('PASSWORD_TOO_SHORT', 'password', 'Password must be at least 16 characters').response();
-			} else if (input.password.length > 128) {
-				return result.addError('PASSWORD_TOO_LONG', 'password', 'Password cannot be more than 128 characters long').response();
-			}
+			check.password(input.password, input.email, result);
+			if (result.hasErrors()) return result.response();
 
 			// @Todo: validate e-mail
 

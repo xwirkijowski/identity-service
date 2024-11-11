@@ -6,7 +6,7 @@ type Session {
     "User-agent used while creating the session"
     userAgent: String
     "Remote host IP address used while creating the seesion"
-    userAddress: String
+    userAddress: IPAddress
     "Session creation timestamp"
     createdAt: DateTime
     "Session last refresh timestamp"
@@ -26,6 +26,8 @@ extend type Query {
     "Get current session"
     currentSession: Session
 }
+
+scalar IPAddress
 
 # Inputs
 

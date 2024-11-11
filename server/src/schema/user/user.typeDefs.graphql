@@ -96,9 +96,13 @@ type RegisterPayload {
 # Mutations
 
 extend type Mutation {
+    "Create new user"
     createUser(input: CreateUserInput): CreateUserPayload!
+    "Update user"
     updateUser(input: UpdateUserInput): UpdateUserPayload!
+    "Completely delete user from database"
     deleteUser(userId: ID!): DeleteUserPayload!
-    
+
+    "Register a new user"
     register(input: RegisterInput): RegisterPayload!
 }

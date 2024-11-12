@@ -1,4 +1,4 @@
-import { $L } from "./log.js";
+import { globalLogger as log } from "./log.js";
 
 export class Result {
 	constructor (result, errors) {
@@ -25,13 +25,13 @@ export class Result {
 		return this;
 	}
 
-	addErrorAndLog = (code, path, message, type, note, component = undefined) => {
+	addErrorAndLog = (code, path, message, type, note, component = undefined) => { // @todo: Refactor due to new logger
 		if (this.success === true) this.success = false;
 		this.errors.push(new ResultError(code, path, message));
 		this.#pushErrorCode(code);
 
-		if (typeof type === 'string' && ['error', 'warn', 'info', 'log'].includes(type)) {
-			$L[type](`${note?note+' ':''}Code: ${code}`, undefined, component);
+		if (typeof type === 'string' && ['request', 'audit'].includes(type)) {
+			log.withDomain(type, component, `${note?note+' ':''}Code: ${code}`);
 		}
 
 		return this;

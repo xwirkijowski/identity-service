@@ -1,11 +1,10 @@
 import mongoose from "mongoose";
 import {createClient} from "redis";
 
-import { $L } from "./utilities/log.js";
+import { globalLogger as log } from "./utilities/log.js";
 import InternalError from "./utilities/internalError.js";
 import config from "../config.js";
 import InternalWarning from "./utilities/internalWarning.js";
-
 
 /**
  * System status class
@@ -37,7 +36,7 @@ const setupMongo = async () => {
 
 	mongoose.connection.on('connected', () => {
 		$S.setDB('connected');
-		$L.success('Database connection established!', undefined, 'Mongoose')
+		log.withDomain('success','Mongoose', 'Database connection established!');
 	})
 
 	mongoose.connection.on('error', err => {
@@ -53,7 +52,7 @@ const setupMongo = async () => {
 	// Attempt to connect
 	try {
 		$S.setDB('connecting');
-		$L.log('Attempting to establish database connection...', undefined, 'Mongoose')
+		log.withDomain('info', 'Mongoose', 'Attempting to establish database connection...');
 
 		await mongoose.connect(config.mongo.connection(), {
 			heartbeatFrequencyMS: 10000,
@@ -97,7 +96,7 @@ const setupRedis = async (client) => {
 	// Redis client has connected and is ready for operations
 	client.on('ready', () => {
 		$S.setRedis('connected');
-		$L.success('Database connection established!', undefined, 'Redis')
+		log.withDomain('success', 'Redis', 'Database connection established!');
 	})
 
 	// Redis client has encountered an error
@@ -115,7 +114,7 @@ const setupRedis = async (client) => {
 	// Attempt to connect
 	try {
 		$S.setRedis('connecting');
-		$L.log('Attempting to establish database connection...', undefined, 'Redis')
+		log.withDomain('info', 'Redis', 'Attempting to establish database connection...');
 		client.connect();
 	} catch (err) {
 		// Handle initial errors

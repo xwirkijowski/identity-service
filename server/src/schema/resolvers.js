@@ -41,7 +41,7 @@ export default {
 		}
 	},
 	Query: {
-		healthCheck: () => {
+		healthCheck: async (_,__,{internal}) => {
 			return true;
 		}
 	}

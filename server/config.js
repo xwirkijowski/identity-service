@@ -1,9 +1,9 @@
 import InternalError from './src/utilities/internalError.js';
 import InternalWarning from './src/utilities/internalWarning.js';
-import {$L} from "./src/utilities/log.js";
+import {globalLogger as log} from "./src/utilities/log.js";
 
 // Load configuration from environment variables
-$L.log('Loading configuration...');
+log.info('Loading configuration...');
 
 const config = {}
 
@@ -51,7 +51,7 @@ if (!process.env?.REDIS_STRING) {
 		string: process.env.REDIS_STRING
 	}
 
-	$L.log('Using Redis connection string');
+	log.std('Using Redis connection string');
 }
 
 config.redis.socket = {
@@ -88,7 +88,7 @@ if (!process.env.MONGO_STRING) {
 		string: process.env.MONGO_STRING
 	}
 
-	$L.log('Using MongoDB connection string');
+	log.std('Using MongoDB connection string');
 }
 
 config.mongo.connection = () => {
@@ -101,6 +101,6 @@ config.mongo.connection = () => {
 	return `mongodb://${(userString)}${config.mongo.host}:${config.mongo.port}/${config.mongo.db}${config.mongo.opts||''}`
 };
 
-$L.success('Configuration loaded!')
+log.success('Configuration loaded!')
 
 export default config;

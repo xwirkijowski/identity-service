@@ -1,8 +1,12 @@
-import { $L } from './log.js';
+import { globalLogger as log } from './log.js';
 
 export default class InternalWarning {
 	constructor(msg, ext, mod) {
 		// Log reported warning
-		$L.warn(msg, ext, mod);
+		if (mod) {
+			log.withDomain('warn', `${mod}`, msg, ext);
+		} else {
+			log.warn(msg, ext)
+		}
 	}
 }

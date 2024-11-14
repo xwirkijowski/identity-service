@@ -41,7 +41,7 @@ const telemetryPlugin = () => {
 						time: (telemetryStop - contextValue.internal.telemetryStart).toFixed(2),
 						requestId: contextValue.internal.requestId,
 						timestampStart: contextValue.internal.timestampStart,
-						timestampEnd: new Date().toUTCString(),
+						timestampEnd: new Date().toISOString(),
 						userId: contextValue.session?.userId
 					})
                 }

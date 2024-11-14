@@ -23,22 +23,9 @@ jspm_packages/
 # Optional npm cache directory
 .npm
 
-# Optional eslint cache
-.eslintcache
-
 # dotenv environment variable files
 .env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
-# Next.js build output
-.next
-out
-
-# TernJS port file
-.tern-port
+.env*
 
 # yarn v2
 .yarn/cache

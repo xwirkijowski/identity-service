@@ -15,7 +15,7 @@
     "@graphql-tools/load-files": "^7.0.0",
     "@graphql-tools/merge": "^9.0.8",
     "@graphql-tools/schema": "^10.0.7",
-    "eudoros": "^1.1.1",
+    "eudoros": "^1.2.0",
     "graphql": "^16.9.0",
     "graphql-scalars": "^1.23.0",
     "inigo-windows-amd64": "^0.30.11",
